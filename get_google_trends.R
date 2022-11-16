@@ -226,28 +226,28 @@ avg_var = trends_sa3 %>%
   
 
 # calculate trend
-pdf(file=paste0(charts_folder,"seasonal_adjust_smoothed.pdf"))
-for(i in 1:nrow(avg_var)){
-
-  print(i/nrow(avg_var))
-
-  test1 = ggplot() +
-    geom_line(data=trends_sa3 %>% filter(state==avg_var$state[i]&category==avg_var$category[i]),aes(x=date,y=hits_adj,colour="Adjusted Hits")) +
-    stat_smooth(data=trends_sa3 %>% filter(state==avg_var$state[i]&category==avg_var$category[i]),aes(x=date,y=hits_adj),method="loess",span=.1) +
-    labs(caption=paste0(avg_var$state[i]," ",avg_var$category[i]))
-
-  testvec = ggplot_build(test1)$data[[2]]$y
-  hits_sa = zoo::na.approx(c(testvec[1],sapply(testvec[-c(1,74:80)], function(x) c(rep(NA,4),x)),sapply(testvec[c(74:80)], function(x) c(rep(NA,6),x))))
-
-  trends_sa3$hits_sa[trends_sa3$state==avg_var$state[i]&trends_sa3$category==avg_var$category[i]] = hits_sa
-
-  print(ggplot(trends_sa3 %>% filter(state==avg_var$state[i]&category==avg_var$category[i])) +
-                      geom_line(aes(x=date,y=hits_adj),color="blue") +
-                       geom_line(aes(x=date,y=hits_sa),color="red") +
-          labs(caption=paste0(avg_var$state[i]," ",avg_var$category[i])))
-
-}
-dev.off()
+# pdf(file=paste0(charts_folder,"seasonal_adjust_smoothed.pdf"))
+# for(i in 1:nrow(avg_var)){
+# 
+#   print(i/nrow(avg_var))
+# 
+#   test1 = ggplot() +
+#     geom_line(data=trends_sa3 %>% filter(state==avg_var$state[i]&category==avg_var$category[i]),aes(x=date,y=hits_adj,colour="Adjusted Hits")) +
+#     stat_smooth(data=trends_sa3 %>% filter(state==avg_var$state[i]&category==avg_var$category[i]),aes(x=date,y=hits_adj),method="loess",span=.1) +
+#     labs(caption=paste0(avg_var$state[i]," ",avg_var$category[i]))
+# 
+#   testvec = ggplot_build(test1)$data[[2]]$y
+#   hits_sa = zoo::na.approx(c(testvec[1],sapply(testvec[-c(1,74:80)], function(x) c(rep(NA,4),x)),sapply(testvec[c(74:80)], function(x) c(rep(NA,6),x))))
+# 
+#   trends_sa3$hits_sa[trends_sa3$state==avg_var$state[i]&trends_sa3$category==avg_var$category[i]] = hits_sa
+# 
+#   print(ggplot(trends_sa3 %>% filter(state==avg_var$state[i]&category==avg_var$category[i])) +
+#                       geom_line(aes(x=date,y=hits_adj),color="blue") +
+#                        geom_line(aes(x=date,y=hits_sa),color="red") +
+#           labs(caption=paste0(avg_var$state[i]," ",avg_var$category[i])))
+# 
+# }
+# dev.off()
 
 trends_sa3 = trends_sa3 %>% 
   mutate(hits_sa = ifelse(hits_sa<0,0,hits_sa))
