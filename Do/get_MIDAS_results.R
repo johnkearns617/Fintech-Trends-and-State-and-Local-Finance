@@ -264,11 +264,15 @@ google_index_ex_data = trends_sa3 %>%
   select(date,state,category,hits) %>% 
   rowwise() %>% 
   mutate(cat_name=which_category(category)) %>% 
+  ungroup() %>% 
+  group_by(state,cat_name) %>% 
+  mutate(hits1=hits/hits[date=="2020-03-15"]*100) %>% 
   ungroup()
 
 index_unadj = ggplot(google_index_ex_data,aes(x=date,y=hits,color=as.character(category))) +
   geom_line() +
-  facet_wrap(~state+cat_name) +
+  geom_vline(xintercept=as.Date("2020-03-12"),color="red") +
+  facet_wrap(~state+cat_name,scales="free_y") +
   ggthemes::theme_fivethirtyeight() +
   theme(legend.position="none") +
   scale_color_manual(values=c(scales::muted("orange"),scales::muted("green")))
@@ -277,20 +281,22 @@ ggsave(paste0(charts_folder,"index_unadjustd.png"),index_unadj,scale=.5,width=15
 
 google_index_ex_data = trends_sa3 %>%
   ungroup() %>% 
-  filter(state%in%c("NJ","AL")&category%in%c(718,918)) %>% 
+  filter(state%in%c("NJ","AL")&category%in%c(918)) %>% 
   select(date,state,category,hits_sa) %>% 
   rowwise() %>% 
   mutate(cat_name=which_category(category)) %>% 
   ungroup()
 
-index_adj = ggplot(google_index_ex_data,aes(x=date,y=hits_sa,color=as.character(category))) +
+index_adj = ggplot(google_index_ex_data,aes(x=date,y=hits_sa,color=as.character(state))) +
   geom_line() +
   facet_wrap(~state+cat_name) +
-  ggthemes::theme_fivethirtyeight() +
-  theme(legend.position="none") +
+  geom_vline(xintercept=as.Date("2020-03-12"),color='red') +
+  theme_bw() +
+  labs(y="Google Search Intensity Index (max = 100)",x="") +
+  theme(legend.position="none",axis.title.y=element_text()) +
   scale_color_manual(values=c(scales::muted("orange"),scales::muted("green")))
 
-ggsave(paste0(charts_folder,"index_adjustd.png"),index_adj,scale=.5,width=15,height=10)
+ggsave(paste0(charts_folder,"index_adjustd.png"),index_adj,scale=.5,width=20,height=10)
 
 
 armax_coeffs = read_csv(paste0(data_folder,"Raw/coefs.csv")) %>% 
@@ -303,9 +309,10 @@ armax_coeffs = read_csv(paste0(data_folder,"Raw/coefs.csv")) %>%
 coef_bar_plot = ggplot(armax_coeffs,aes(x=reorder(name,coeff),y=coeff,fill=coeff)) +
   geom_bar(stat="identity") +
   scale_fill_gradient(low="red",high="green") +
+  labs(y="Increase in GDP growth (%) for\n1% increase in search intensity") +
   coord_flip() +
   ggthemes::theme_fivethirtyeight() +
-  theme(legend.position="none")
+  theme(legend.position="none",axis.title.x=element_text()) 
 
 ggsave(paste0(charts_folder,"coef_bar_plot.png"),coef_bar_plot,scale=.5,width=15,height=10)
 
@@ -319,9 +326,10 @@ armax_coeffs_pc = read_csv(paste0(data_folder,"Raw/coefs_pc.csv")) %>%
 coef_bar_plot_pc = ggplot(armax_coeffs_pc,aes(x=reorder(name,coeff),y=coeff,fill=coeff)) +
   geom_bar(stat="identity") +
   scale_fill_gradient(low="red",high="green") +
+  labs(y="Increase in GDP growth (%) for\n1% increase in search intensity") +
   coord_flip() +
   ggthemes::theme_fivethirtyeight() +
-  theme(legend.position="none")
+  theme(legend.position="none",axis.title.x=element_text()) 
 
 ggsave(paste0(charts_folder,"coef_bar_plot_pc.png"),coef_bar_plot_pc,scale=.5,width=15,height=10)
 
@@ -329,9 +337,10 @@ armax_coeffs_diff = armax_coeffs_pc %>% filter((id%in%armax_coeffs$id))
 coef_bar_plot_diff = ggplot(armax_coeffs_diff,aes(x=reorder(name,coeff),y=coeff,fill=coeff)) +
   geom_bar(stat="identity") +
   scale_fill_gradient(low="red",high="green") +
+  labs(y="Increase in GDP growth (%) for\n1% increase in search intensity") +
   coord_flip() +
   ggthemes::theme_fivethirtyeight() +
-  theme(legend.position="none")
+  theme(legend.position="none",axis.title.x=element_text()) 
 
 ggsave(paste0(charts_folder,"coef_bar_plot_diff.png"),coef_bar_plot_diff,scale=.5,width=15,height=10)
 
@@ -360,4 +369,8 @@ st(reg_data_final %>%
             "Change in Property Inspections GT Index (%)"=hits_sa_yoy_pchange_463,
             "Change in Home Improvement GT Index (%)"=hits_sa_yoy_pchange_158),
    digits=2)
+
+# look at government need
+
+
 
